@@ -31,6 +31,7 @@ class KZGOperator:
         for k in range(length):
             if k == j:
                 continue
+            # TODO: review this
             q = Poly([self.GF(1), -x_arr[k]], self.GF) // (x_arr[j] - x_arr[k])
             res *= q
         return res
@@ -64,10 +65,8 @@ class KZGProver(KZGOperator):
     def generate_one_point_proof(self, polynomial:Poly, point:tuple[int, int]) -> Point2D:
         z = self.GF(point[0])
         v = self.GF(point[1])
-        
         num = polynomial - Poly([v], self.GF)
         denom = Poly([1, -z], self.GF)
-
         assert num % denom == 0, "The polynomial does not pass through the point"
         w_x =  num // denom
         w = self.evaluate_with_SRS(w_x, self.SRS_1)
@@ -95,11 +94,12 @@ class KZGVerifier(KZGOperator):
         super().__init__(GF, curve_order, SRS_degree, SRS_1, SRS_2)
 
     def verify_one_point_proof(self, commitment:Point2D, point:tuple[int, int], proof:Point2D, SRS_2:list[Point2D]):
-        x = self.GF(point[0])
-        y = self.GF(point[1])
+        z = self.GF(point[0])
+        v = self.GF(point[1])
+        g_tau = SRS_2[1]
 
-        lhs = pairing(G2, add(commitment, neg(multiply(G1, int(y)))))
-        rhs = pairing(add(SRS_2[1], neg(multiply(G2, int(x)))), proof)
+        lhs = pairing(G2, add(commitment, neg(multiply(G1, int(v)))))
+        rhs = pairing(add(g_tau, neg(multiply(G2, int(z)))), proof)
         assert eq(lhs, rhs), "The proof is invalid"
 
     def verify_batch_proof(self, commitment:Point2D, points:list[tuple[int, int]], proof:Point2D):
