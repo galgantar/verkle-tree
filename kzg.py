@@ -31,7 +31,6 @@ class KZGOperator:
         for k in range(length):
             if k == j:
                 continue
-            # TODO: review this
             q = Poly([self.GF(1), -x_arr[k]], self.GF) // (x_arr[j] - x_arr[k])
             res *= q
         return res
