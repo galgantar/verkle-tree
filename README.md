@@ -1,11 +1,11 @@
-# verkle-tree
-Verkle tree implementation as a part of my bachelor's thesis
+# Implementacija polinomske zaveze KZG in Verklovih dreves
+Repozitorij s praktičnim izdelkom moje diplomske naloge z naslovom **Polinomske zaveze: kriptografsko ozadje in praktične aplikacije**. Repozitorij vsebuje implementacijo polinomske zaveze KZG (datoteka `kzg.py`), Merklovega drevesa (datoteka `merkle_tree.py`) in Verklovega drevesa (datoteka `verkle_tree.py`). V datoteki `analysis.ipynb` je prikazno osnovno delovanje polinomske zaveze, analiza velikosti dokazov in časov preverjanja dokaza Merklovega in Verklovega drevesa.
 
-### Instalation
+## Zagon
 
-To run the project you need Python 3.11.9 (`py-ecc` has some problems with Python 3.12).
+Za zagon programov je potrebno imeti nameščen Python verzije 3.11.9 (modul `py-ecc` ne deluje dobro z verzijami Pythona naprej od vključno 3.12).
 
-To install required libraries run:
+Za namestitev ustreznih modulov poženemo:
 ```
 pip install -r requirements.txt
 ```
