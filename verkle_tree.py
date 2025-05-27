@@ -33,7 +33,7 @@ class LeafNode:
 
 
 class VerkleTreeNode(VerkleTreeOperator):
-    def __init__(self, curve_order:int, children:list[int], kzg_prover:KZGProver):
+    def __init__(self, curve_order:int, children:list, kzg_prover:KZGProver):
         self.children = children
         self.kzg_prover = kzg_prover
         
@@ -58,6 +58,10 @@ class VerkleTreeNode(VerkleTreeOperator):
             proof = self.kzg_prover.generate_batch_proof(self.poly, path)
             return Proof(self.commitment, proof)
         
+        # dokaz je slovar, ki ima pri kljuću -1 shranjen dokaz, da vrednosti otrok trenutnega
+        # vozlišča pripadajo polinomu, ki je shranjen v self.commitment
+        # V ključih iz intervala [1, len(self.children) - 1] so rekurzivno shranjeni dokazi za vozlišča,
+        # ki so otroci self
         res = {}
 
         if len(path) == 1:
@@ -114,25 +118,27 @@ class VerkleTreeVerifier(VerkleTreeOperator):
             self.kzg_verifier.verify_batch_proof(current_proof.commitment, points, current_proof.proof)
 
         for i, subpath in path.items():
-            if isinstance(proof[i], dict):
-                self._validate_proof(subpath, proof[i])
-            else:
-                pass
+            self._validate_proof(subpath, proof[i])
+            # if isinstance(proof[i], dict):
+            #     self._validate_proof(subpath, proof[i])
+            # else:
+            #     print("PASSING")
+            #     pass
 
 
 def build_mock_tree(depth:int, width:int, kzg_prover:KZGProver) -> VerkleTreeNode:
-        if depth == 1:
-            return LeafNode(random.randint(1, curve_order))
-        
-        t1 = build_mock_tree(depth - 1, width, kzg_prover)
-        t2 = build_mock_tree(depth - 1, width, kzg_prover)
-        l = [t1 for _ in range(floor(width / 2))] + [t2 for _ in range(ceil(width / 2))]
-        # Values in the list should be different - polynomial should not be constant -
-        # we shuffle values at each level instead of allocating random values
-        # for memory efficiency
-        random.shuffle(l)
-        a = VerkleTreeNode(curve_order, l, kzg_prover)
-        return a
+    if depth == 1:
+        return LeafNode(random.randint(1, curve_order))
+    
+    t1 = build_mock_tree(depth - 1, width, kzg_prover)
+    t2 = build_mock_tree(depth - 1, width, kzg_prover)
+    l = [t1 for _ in range(floor(width / 2))] + [t2 for _ in range(ceil(width / 2))]
+    # Vrednosti v seznamu morajo biti različne - polinom ne sme biti konstanten -
+    # na vsakem nivoju naključno premešamo vrednsoti, da poskrbimo, da polinom na 
+    # nivoju, ki je za eno višji od trenutnega ni konstanten
+    random.shuffle(l)
+    a = VerkleTreeNode(curve_order, l, kzg_prover)
+    return a
     
 def build_path(tree:VerkleTreeNode) -> dict | list:
     if isinstance(tree, LeafNode):
@@ -162,4 +168,3 @@ if __name__ == "__main__":
     print("Number of elements:", len(root))
 
     verifier.validate_proof(path, proof)
-    
